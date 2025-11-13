@@ -1,0 +1,33 @@
+<!ELEMENT Images (image*)>
+<!ELEMENT image (ImageID?, ImageDir?, StudyID?, PatientID?, PatientBirth?, Projection?, MethodProjection?, Pediatric?, ReportID?, Report?, MethodLabel?,  Labels?, Localizations?, LabelsLocalizationsBySentence?, labelCUIS?, LocalizationsCUIS?)>
+<!ATTLIST image Identifiant CDATA #REQUIRED>
+
+<!-- Champs simples -->
+<!ELEMENT ImageID (#PCDATA)>
+<!ELEMENT ImageDir (#PCDATA)>
+<!ELEMENT StudyID (#PCDATA)>
+<!ELEMENT PatientID (#PCDATA)>
+<!ELEMENT PatientBirth (#PCDATA)>
+<!ELEMENT Projection (#PCDATA)>
+<!ELEMENT Pediatric (#PCDATA)>
+<!ELEMENT MethodProjection (#PCDATA)>
+<!ELEMENT ReportID (#PCDATA)>
+<!ELEMENT Report (#PCDATA)>
+<!ELEMENT MethodLabel (#PCDATA)>
+
+<!-- Labels et localisations (listes) - acceptent Label* OU texte direct -->
+<!ELEMENT Labels (#PCDATA | Label)*>
+<!ELEMENT Label (#PCDATA)>
+
+<!ELEMENT Localizations (#PCDATA | Localization)*>
+<!ELEMENT Localization (#PCDATA)>
+
+<!-- Associations par phrase - accepte Sentence* OU texte direct -->
+<!ELEMENT LabelsLocalizationsBySentence (#PCDATA | Sentence)*>
+<!ELEMENT Sentence (#PCDATA | Label | Localization)*>
+
+<!-- CUI mappings - acceptent leurs enfants OU texte direct -->
+<!ELEMENT labelCUIS (#PCDATA | labelCUI)*>
+<!ELEMENT LocalizationsCUIS (#PCDATA | LocalizationsCUI)*>
+<!ELEMENT labelCUI (#PCDATA)>
+<!ELEMENT LocalizationsCUI (#PCDATA)>

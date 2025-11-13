@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xs:element name="Images">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="image" maxOccurs="unbounded" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <!-- champs simples (optionnels) -->
+                            <xs:element name="ImageID" type="xs:string" minOccurs="0"/>
+                            <xs:element name="ImageDir" type="xs:string" minOccurs="0"/>
+                            <xs:element name="StudyID" type="xs:string" minOccurs="0"/>
+                            <xs:element name="PatientID" type="xs:string" minOccurs="0"/>
+                            <xs:element name="PatientBirth" type="xs:string" minOccurs="0"/>
+                            <xs:element name="Projection" type="xs:string" minOccurs="0"/>
+                            <xs:element name="MethodProjection" type="xs:string" minOccurs="0"/>
+                            <xs:element name="Pediatric" type="xs:string" minOccurs="0"/>
+                            <xs:element name="ReportID" type="xs:string" minOccurs="0"/>
+                            <xs:element name="Report" type="xs:string" minOccurs="0"/>
+                            <xs:element name="MethodLabel" type="xs:string" minOccurs="0"/>
+
+                            <!-- labels (liste) - accepte Label* ou contenu mixte -->
+                            <xs:element name="Labels" minOccurs="0">
+                                <xs:complexType mixed="true">
+                                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="Label" type="xs:string"/>
+                                    </xs:choice>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- localizations (liste) - accepte Localization* ou contenu mixte -->
+                            <xs:element name="Localizations" minOccurs="0">
+                                <xs:complexType mixed="true">
+                                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="Localization" type="xs:string"/>
+                                    </xs:choice>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- associations par phrase - accepte Sentence* ou contenu mixte -->
+                            <xs:element name="LabelsLocalizationsBySentence" minOccurs="0">
+                                <xs:complexType mixed="true">
+                                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="Sentence">
+                                            <xs:complexType mixed="true">
+                                                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:element name="Label" type="xs:string"/>
+                                                    <xs:element name="Localization" type="xs:string"/>
+                                                </xs:choice>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:choice>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <!-- CUI mappings - acceptent leurs enfants ou contenu mixte -->
+                            <xs:element name="labelCUIS" minOccurs="0">
+                                <xs:complexType mixed="true">
+                                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="labelCUI" type="xs:string"/>
+                                    </xs:choice>
+                                </xs:complexType>
+                            </xs:element>
+
+                            <xs:element name="LocalizationsCUIS" minOccurs="0">
+                                <xs:complexType mixed="true">
+                                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                        <xs:element name="LocalizationsCUI" type="xs:string"/>
+                                    </xs:choice>
+                                </xs:complexType>
+                            </xs:element>
+
+                        </xs:sequence>
+
+                        <!-- attribut Identifiant requis -->
+                        <xs:attribute name="Identifiant" type="xs:string" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

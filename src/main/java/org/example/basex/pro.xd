@@ -1,0 +1,22 @@
+// demarer base de données PADChest dans BaseX et exécuter des requêtes XQuery via REST API
+http://localhost:8090/rest/padchestDB
+
+// 1. Compter le nombre d'images qui contiennent la localisation 'loc right'
+http://localhost:8090/rest/padchestDB?query=
+<nb>{count(/Images/image[Localizations/Localization='loc right'])}</nb>
+
+// 2. Top 10 des labels les plus fréquents
+http://localhost:8090/rest/padchestDB?query=
+let $labels := /Images/image/(Labels/Label | LabelsLocalizationsBySentence/Sentence/Label)
+let $normalized :=
+  for $l in $labels
+  let $norm := lower-case(normalize-space($l))
+  where $norm ne '' and $norm ne 'none'
+  return $norm
+let $grouped :=
+  for $val in distinct-values($normalized)
+  let $count := count($normalized[. = $val])
+  order by $count descending
+  return <label name="{$val}" count="{$count}"/>
+return <top10>{subsequence($grouped,1,10)}</top10>
+
