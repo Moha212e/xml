@@ -32,12 +32,6 @@ public class PerformanceComparator {
         String xmlPath = "src/main/java/org/example/data/PADCHEST_chest_x_ray_images_labels_160K_01.02.19.xml";
         String xsdPath = "src/main/java/org/example/structures/images.xsd";
 
-        if (args.length >= 1) {
-            xmlPath = args[0];
-        }
-        if (args.length >= 2) {
-            xsdPath = args[1];
-        }
 
         System.out.println("=================================================================");
         System.out.println("=== COMPARAISON DE PERFORMANCES (Niveau Experts) ===");
@@ -109,7 +103,7 @@ public class PerformanceComparator {
             long[] memoireUtilisee = new long[3];
 
             for (int i = 0; i < 3; i++) {
-                System.gc();
+                System.gc(); // Suggestion de GC avant chaque mesure
                 Thread.sleep(100);
 
                 Runtime runtime = Runtime.getRuntime();

@@ -25,14 +25,9 @@ public class DOMValidator {
 
     public static void main(String[] args) {
         String xmlPath = "src/main/java/org/example/data/PADCHEST_chest_x_ray_images_labels_160K_01.02.19.xml";
-        String xsdPath = null; // Optionnel
+        //String xsdPath = null; // Optionnel : si null, validation DTD uniquement
+        String xsdPath = "src/main/java/org/example/structures/images.xsd"; // Optionnel
 
-        if (args.length >= 1) {
-            xmlPath = args[0];
-        }
-        if (args.length >= 2) {
-            xsdPath = args[1];
-        }
 
         System.out.println("=== VALIDATION DOM (Niveau Pro) ===");
         System.out.println("Fichier XML : " + xmlPath);
@@ -79,9 +74,9 @@ public class DOMValidator {
         if (xsdPath != null) {
             // Validation XSD
             SchemaFactory schemaFactory = SchemaFactory.newInstance(
-                javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI); // elle sert à indiquer qu'on utilise XSD
             Schema schema = schemaFactory.newSchema(new File(xsdPath));
-            factory.setSchema(schema);
+            factory.setSchema(schema); // on assigne le schema au factory
         } else {
             // Validation DTD
             factory.setValidating(true);
@@ -110,7 +105,7 @@ public class DOMValidator {
      * Analyse le document DOM pour extraire les statistiques.
      */
     private static void analyserDocument(Document document, ValidationResult result) {
-        NodeList images = document.getElementsByTagName("image");
+        NodeList images = document.getElementsByTagName("image"); // supposons que les images sont dans des éléments <image>
         result.setImageCount(images.getLength());
 
         Map<String, Integer> labelFrequency = new HashMap<>();

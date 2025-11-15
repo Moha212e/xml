@@ -4,8 +4,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.util.*;
 
@@ -21,19 +24,29 @@ public class SAXValidator {
 
     public static void main(String[] args) {
         String xmlPath = "src/main/java/org/example/data/PADCHEST_chest_x_ray_images_labels_160K_01.02.19.xml";
+        //String xsdPath = "src/main/java/org/example/structures/images.xsd"; // Optionnel : si null, validation DTD uniquement
+        String xsdPath = null; // Optionnel : si null, validation DTD uniquement
 
         if (args.length >= 1) {
             xmlPath = args[0];
         }
+        if (args.length >= 2) {
+            xsdPath = args[1];
+        }
 
         System.out.println("=== VALIDATION SAX (Niveau Minimum) ===");
         System.out.println("Fichier XML : " + xmlPath);
+        if (xsdPath != null) {
+            System.out.println("Fichier XSD : " + xsdPath);
+        } else {
+            System.out.println("Mode de validation : DTD uniquement");
+        }
         System.out.println();
 
         long startTime = System.currentTimeMillis();
 
         try {
-            validate(xmlPath);
+            validate(xmlPath, xsdPath);
 
             long endTime = System.currentTimeMillis();
             System.out.println("\n✓ Validation et analyse terminées avec succès !");
@@ -46,18 +59,34 @@ public class SAXValidator {
     }
 
     /**
-     * Valide le fichier XML avec DTD et effectue les calculs statistiques.
+     * Valide le fichier XML avec DTD ou XSD et effectue les calculs statistiques.
+     *
+     * @param xmlPath Chemin vers le fichier XML
+     * @param xsdPath Chemin vers le fichier XSD (null pour validation DTD uniquement)
      */
-    public static void validate(String xmlPath) throws Exception {
+    public static void validate(String xmlPath, String xsdPath) throws Exception {
         SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setValidating(true); // DTD
         factory.setNamespaceAware(true);
+
+        // Configuration de la validation : XSD si fourni, sinon DTD
+        if (xsdPath != null) {
+            // Validation XSD
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = schemaFactory.newSchema(new File(xsdPath));
+            factory.setSchema(schema);
+            System.out.println("✓ Validation XSD activée");
+        } else {
+            // Validation DTD
+            factory.setValidating(true);
+            System.out.println("✓ Validation DTD activée");
+        }
 
         SAXParser parser = factory.newSAXParser();
         ImageHandler handler = new ImageHandler();
         parser.parse(new File(xmlPath), handler);
 
         // Afficher les résultats
+        System.out.println();
         System.out.println("--- RÉSULTATS DE L'ANALYSE ---");
         System.out.println();
         System.out.println("1. Images contenant 'loc right' : " + handler.getLocRightCount());

@@ -167,6 +167,7 @@
                                         <th>ID Étude</th>
                                         <th>ID Patient</th>
                                         <th>Naissance</th>
+                                        <th>Pédiatrique</th>
                                         <th>Projection</th>
                                         <th>Méth. Proj.</th>
                                         <th>Méth. Label</th>
@@ -194,6 +195,7 @@
                                                     </xsl:otherwise>
                                                 </xsl:choose>
                                             </td>
+                                            <td class="ped"><xsl:value-of select="Pediatric"/></td>
                                             <td class="proj"><xsl:value-of select="Projection"/></td>
                                             <td><xsl:value-of select="MethodProjection"/></td>
                                             <td><xsl:value-of select="MethodLabel"/></td>

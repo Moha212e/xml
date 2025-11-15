@@ -65,6 +65,7 @@
               <p><strong>Répertoire Image :</strong> <xsl:value-of select="ImageDir"/></p>
               <p><strong>ID Étude :</strong> <xsl:value-of select="StudyID"/></p>
               <p><strong>ID Patient :</strong> <xsl:value-of select="PatientID"/></p>
+              <p><strong>Pediatrix :</strong> <xsl:value-of select="Pediatric"/></p>
               <p><strong>Date de Naissance :</strong>
                 <xsl:choose>
                   <xsl:when test="contains(PatientBirth, '.0')">
