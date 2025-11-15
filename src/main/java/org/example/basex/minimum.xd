@@ -1,5 +1,12 @@
 <nb-loc-right>{
-  count(/Images/image[Localizations/Localization = 'loc right'])
+  count(
+    distinct-values(
+      /Images/image[
+        Localizations/Localization[. = 'loc right']
+        or LabelsLocalizationsBySentence/Sentence/Localization[. = 'loc right']
+      ]/@Identifiant
+    )
+  )
 }</nb-loc-right>
 
 

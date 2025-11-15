@@ -3,7 +3,7 @@ http://localhost:8090/rest/padchestDB
 
 // 1. Compter le nombre d'images qui contiennent la localisation 'loc right'
 http://localhost:8090/rest/padchestDB?query=
-<nb>{count(/Images/image[Localizations/Localization='loc right'])}</nb>
+<nb>{count(distinct-values(/Images/image[Localizations/Localization[.='loc right'] or LabelsLocalizationsBySentence/Sentence/Localization[.='loc right']]/@Identifiant))}</nb>
 
 // 2. Top 10 des labels les plus fréquents
 http://localhost:8090/rest/padchestDB?query=

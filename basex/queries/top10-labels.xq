@@ -1,13 +1,14 @@
 (: 1. Compter le nombre d'images qui contiennent la localisation 'loc right' :)
+(: Note: On utilise distinct-values pour éviter de compter plusieurs fois la même image :)
 
 <nb-images-loc-right>{
   count(
-    /Images/image[
-      Localizations/Localization = 'loc right'
-      (: si tu as aussi des localisations dans LabelsLocalizationsBySentence,
-         tu peux ajouter la ligne suivante :)
-      (: or LabelsLocalizationsBySentence/Sentence/Localization = 'loc right' :)
-    ]
+    distinct-values(
+      /Images/image[
+        Localizations/Localization[. = 'loc right']
+        or LabelsLocalizationsBySentence/Sentence/Localization[. = 'loc right']
+      ]/@Identifiant
+    )
   )
 }</nb-images-loc-right>
 

@@ -27,29 +27,76 @@
                 const DB = "padchestDB"; // Nom de la base BaseX déjà créée
                 const AUTH = "Basic " + btoa("admin:admin");
 
-                // 1) Count loc right via endpoint RESTXQ
-                fetch(`${BASEX_URL}/loc-right`, { headers: { "Authorization": AUTH } })
-                  .then(r => r.text())
-                  .then(xml => {
-                      const doc = new DOMParser().parseFromString(xml, "text/xml");
-                      document.getElementById("locRightCount").textContent = doc.getElementsByTagName("nb")[0].textContent;
-                  })
-                  .catch(e => console.error("Erreur loc-right", e));
+                // 1) Count loc right via requête XQuery directe
+                const queryLocRight = encodeURIComponent(`
+                  <nb-loc-right>{
+                    count(
+                      distinct-values(
+                        db:open('${DB}')/Images/image[
+                          Localizations/Localization[. = 'loc right']
+                          or LabelsLocalizationsBySentence/Sentence/Localization[. = 'loc right']
+                        ]/@Identifiant
+                      )
+                    )
+                  }</nb-loc-right>
+                `);
 
-                // 2) Top 10 labels via endpoint RESTXQ
-                fetch(`${BASEX_URL}/top10-labels`, { headers: { "Authorization": AUTH } })
+                fetch(`${BASEX_URL}?query=${queryLocRight}`, {
+                    headers: { "Authorization": AUTH }
+                })
                   .then(r => r.text())
                   .then(xml => {
                       const doc = new DOMParser().parseFromString(xml, "text/xml");
-                      const labs = doc.getElementsByTagName("label");
-                      let html = "<ol>";
-                      for (let i = 0; i < labs.length; i++) {
-                          html += `<li><strong>${labs[i].getAttribute("name")}</strong> : ${labs[i].getAttribute("count")} occurrences</li>`;
+                      const nb = doc.querySelector("nb-loc-right");
+                      if (nb) {
+                          document.getElementById("locRightCount").textContent = nb.textContent;
+                      } else {
+                          document.getElementById("locRightCount").textContent = "Erreur";
                       }
-                      html += "</ol>";
-                      document.getElementById("top10Labels").innerHTML = html;
                   })
-                  .catch(e => console.error("Erreur top10-labels", e));
+                  .catch(e => {
+                      console.error("Erreur loc-right", e);
+                      document.getElementById("locRightCount").textContent = "Erreur de connexion";
+                  });
+
+                // 2) Top 10 labels via requête XQuery directe
+                const queryTop10 = encodeURIComponent(`
+                  let $labels := db:open('${DB}')/Images/image/(Labels/Label | LabelsLocalizationsBySentence/Sentence/Label)
+                  let $normalized :=
+                    for $l in $labels
+                    let $norm := lower-case(normalize-space($l))
+                    where $norm ne '' and $norm ne 'none'
+                    return $norm
+                  let $grouped :=
+                    for $val in distinct-values($normalized)
+                    let $count := count($normalized[. = $val])
+                    order by $count descending, $val
+                    return <label name="{$val}" count="{$count}"/>
+                  return <labels-top10>{ subsequence($grouped, 1, 10) }</labels-top10>
+                `);
+
+                fetch(`${BASEX_URL}?query=${queryTop10}`, {
+                    headers: { "Authorization": AUTH }
+                })
+                  .then(r => r.text())
+                  .then(xml => {
+                      const doc = new DOMParser().parseFromString(xml, "text/xml");
+                      const labs = doc.querySelectorAll("label");
+                      if (labs.length > 0) {
+                          let html = "<ol>";
+                          labs.forEach(lab => {
+                              html += `<li><strong>${lab.getAttribute("name")}</strong> : ${lab.getAttribute("count")} occurrences</li>`;
+                          });
+                          html += "</ol>";
+                          document.getElementById("top10Labels").innerHTML = html;
+                      } else {
+                          document.getElementById("top10Labels").innerHTML = "Aucun résultat";
+                      }
+                  })
+                  .catch(e => {
+                      console.error("Erreur top10-labels", e);
+                      document.getElementById("top10Labels").innerHTML = "Erreur de connexion";
+                  });
                 ]]></script>
 
             </body>
