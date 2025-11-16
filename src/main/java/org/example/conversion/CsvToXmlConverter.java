@@ -40,12 +40,7 @@ public class CsvToXmlConverter {
         String csvPath = "src/main/java/org/example/data/PADCHEST_chest_x_ray_images_labels_160K_01.02.19.csv";
         String xmlPath = "src/main/java/org/example/data/PADCHEST_chest_x_ray_images_labels_160K_01.02.19.xml";
 
-        if (args.length >= 1) {
-            csvPath = args[0];
-        }
-        if (args.length >= 2) {
-            xmlPath = args[1];
-        }
+
 
         convert(csvPath, xmlPath);
     }

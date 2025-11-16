@@ -7,6 +7,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
@@ -37,7 +38,7 @@ public class PerformanceComparator {
         System.out.println("=== COMPARAISON DE PERFORMANCES (Niveau Experts) ===");
         System.out.println("=================================================================");
         System.out.println("Fichier XML : " + xmlPath);
-        System.out.println("Fichier XSD : " + xsdPath);
+        System.out.println("Fichier XSD/DTD : " + xsdPath);
         System.out.println();
         System.out.println("Note : Les tests sont exécutés plusieurs fois pour obtenir");
         System.out.println("       des résultats plus fiables (warm-up de la JVM).");
@@ -177,20 +178,80 @@ public class PerformanceComparator {
     }
 
     /**
+     * Configure une factory (SAX ou DOM) en fonction du chemin de schéma fourni.
+     * Accepte : .xsd => XSD via SchemaFactory, .dtd => validation DTD, null => DTD via DOCTYPE.
+     */
+    private static void configureFactoryForSchema(Object factoryObj, String xsdPath) throws Exception {
+        if (xsdPath != null) {
+            String lower = xsdPath.toLowerCase(Locale.ROOT);
+            File schemaFile = new File(xsdPath);
+            if (lower.endsWith(".xsd")) {
+                if (!schemaFile.exists()) {
+                    throw new IllegalArgumentException("Fichier XSD introuvable: " + xsdPath);
+                }
+                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                Schema schema = schemaFactory.newSchema(schemaFile);
+
+                if (factoryObj instanceof SAXParserFactory) {
+                    SAXParserFactory f = (SAXParserFactory) factoryObj;
+                    f.setNamespaceAware(true);
+                    f.setSchema(schema);
+                    f.setValidating(false);
+                } else if (factoryObj instanceof DocumentBuilderFactory) {
+                    DocumentBuilderFactory f = (DocumentBuilderFactory) factoryObj;
+                    f.setNamespaceAware(true);
+                    f.setSchema(schema);
+                    f.setValidating(false);
+                }
+            } else if (lower.endsWith(".dtd")) {
+                if (!schemaFile.exists()) {
+                    throw new IllegalArgumentException("Fichier DTD introuvable: " + xsdPath);
+                }
+                if (factoryObj instanceof SAXParserFactory) {
+                    SAXParserFactory f = (SAXParserFactory) factoryObj;
+                    f.setNamespaceAware(true);
+                    f.setValidating(true);
+                } else if (factoryObj instanceof DocumentBuilderFactory) {
+                    DocumentBuilderFactory f = (DocumentBuilderFactory) factoryObj;
+                    f.setNamespaceAware(true);
+                    f.setValidating(true);
+                }
+            } else {
+                if (schemaFile.exists() && xsdPath.toLowerCase().contains(".dtd")) {
+                    if (factoryObj instanceof SAXParserFactory) {
+                        SAXParserFactory f = (SAXParserFactory) factoryObj;
+                        f.setNamespaceAware(true);
+                        f.setValidating(true);
+                    } else if (factoryObj instanceof DocumentBuilderFactory) {
+                        DocumentBuilderFactory f = (DocumentBuilderFactory) factoryObj;
+                        f.setNamespaceAware(true);
+                        f.setValidating(true);
+                    }
+                } else {
+                    throw new IllegalArgumentException("Type de schéma non reconnu pour: " + xsdPath + ". Utiliser .xsd ou .dtd, ou passez null pour DTD via DOCTYPE.");
+                }
+            }
+        } else {
+            // Mode DTD uniquement (le XML doit contenir un DOCTYPE qui référence la DTD)
+            if (factoryObj instanceof SAXParserFactory) {
+                SAXParserFactory f = (SAXParserFactory) factoryObj;
+                f.setNamespaceAware(true);
+                f.setValidating(true);
+            } else if (factoryObj instanceof DocumentBuilderFactory) {
+                DocumentBuilderFactory f = (DocumentBuilderFactory) factoryObj;
+                f.setNamespaceAware(true);
+                f.setValidating(true);
+            }
+        }
+    }
+
+    /**
      * Exécute un parsing SAX (sans afficher les résultats).
      */
     private static void executerSAX(String xmlPath, String xsdPath) throws Exception {
         SAXParserFactory factory = SAXParserFactory.newInstance();
-        factory.setNamespaceAware(true);
-
-        if (xsdPath != null) {
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(
-                javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = schemaFactory.newSchema(new File(xsdPath));
-            factory.setSchema(schema);
-        } else {
-            factory.setValidating(true);
-        }
+        // Configuration automatique XSD / DTD
+        configureFactoryForSchema(factory, xsdPath);
 
         SAXParser parser = factory.newSAXParser();
         parser.parse(new File(xmlPath), new MinimalHandler());
@@ -201,16 +262,8 @@ public class PerformanceComparator {
      */
     private static void executerDOM(String xmlPath, String xsdPath) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-
-        if (xsdPath != null) {
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(
-                javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = schemaFactory.newSchema(new File(xsdPath));
-            factory.setSchema(schema);
-        } else {
-            factory.setValidating(true);
-        }
+        // Configuration automatique XSD / DTD
+        configureFactoryForSchema(factory, xsdPath);
 
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(new File(xmlPath));
@@ -267,7 +320,7 @@ public class PerformanceComparator {
         for (ResultatPerformance r : resultats) {
             if (r.isSucces()) {
                 System.out.printf("│ %-11s │ %,15d  │ %,17d  │%n",
-                    r.getNom(), r.getTempsMoyen(), r.getMemoireMoyenne());
+                        r.getNom(), r.getTempsMoyen(), r.getMemoireMoyenne());
             } else {
                 System.out.printf("│ %-11s │      ERREUR      │       ERREUR       │%n", r.getNom());
             }
@@ -370,4 +423,3 @@ public class PerformanceComparator {
         }
     }
 }
-
